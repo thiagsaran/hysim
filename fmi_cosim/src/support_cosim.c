@@ -13,12 +13,12 @@
 #include <stdarg.h>
 #define FMI_COSIMULATION
 #ifdef FMI_COSIMULATION
-#include "fmi_cs.h"
+#include "fmi_cosim.h"
 #else
-#include "fmi_me.h"
+#include "fmi_me.h" // later model exchange can be integrated to a unified base.
 #endif
 
-#include "sim_support.h"
+#include "support_cosim.h"
 
 #ifndef _MSC_VER
 #define MAX_PATH 1024

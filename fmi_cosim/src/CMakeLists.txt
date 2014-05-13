@@ -1,6 +1,6 @@
 ADD_EXECUTABLE(fmi_cosim
-                            main_cs.c
-                            sim_support.c
+                            main_cosim.c
+                            support_cosim.c
                             stack.c
 			    xml_parser.c
                             )

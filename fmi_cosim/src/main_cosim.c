@@ -30,8 +30,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "fmi_cs.h"
-#include "sim_support.h"
+#include "fmi_cosim.h"
+#include "support_cosim.h"
 
 FMU fmu; // the fmu to simulate
 
