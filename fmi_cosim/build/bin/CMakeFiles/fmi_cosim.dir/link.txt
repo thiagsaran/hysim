@@ -1,0 +1,1 @@
+/usr/bin/cc   -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/fmi_cosim.dir/main_cs.c.o CMakeFiles/fmi_cosim.dir/sim_support.c.o CMakeFiles/fmi_cosim.dir/stack.c.o CMakeFiles/fmi_cosim.dir/xml_parser.c.o  -o ../../bin/fmi_cosim  -Llib  -lexpat -Wl,-rpath,lib 

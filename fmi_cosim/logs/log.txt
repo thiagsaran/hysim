@@ -1,0 +1,12 @@
+standalone build
+clang -m64 main_cs.c sim_support.c xml_parser.c stack.c -o fmi_cs.exe -lexpat
+
+The following files are needed to test Model exchange part of FMI standard
+
+logs/fmi_me.h
+logs/fmiModelFunctions.h
+logs/fmiModelTypes.h
+logs/main_me.c
+
+general make file for recursive search and build…. currently not used.
+logs/Makefile

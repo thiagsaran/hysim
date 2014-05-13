@@ -1,1 +1,0 @@
-clang -m64 main_cs.c sim_support.c xml_parser.c stack.c -o fmi_cs.exe -lexpat
