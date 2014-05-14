@@ -73,6 +73,18 @@ static int simulate(FMU* fmu, double tEnd, double h, fmiBoolean loggingOn, char 
         return 0; // failure
     }
     
+    //setting a parameter before initializeSlave
+    
+    fmiBoolean select1_k=0;
+    fmiBoolean select1_y;
+    fmiValueReference select1_k_vr= 536870954;
+    fmiValueReference select1_y_vr= 536870964;
+    
+    
+    fmiFlag = fmu->setBoolean(c, &select1_k_vr, 1, &select1_k);
+    fmiFlag = fmu->getBoolean(c, &select1_y_vr, 1, &select1_y);
+    printf("\nvalue of scalar variable select1.y is %d\n", select1_y);
+    
     // StopTimeDefined=fmiFalse means: ignore value of tEnd
     fmiFlag = fmu->initializeSlave(c, tStart, fmiTrue, tEnd);
     if (fmiFlag > fmiWarning)  return error("could not initialize model");
