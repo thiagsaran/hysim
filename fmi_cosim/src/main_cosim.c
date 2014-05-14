@@ -152,3 +152,16 @@ int main(int argc, char *argv[]) {
     return EXIT_SUCCESS;
 }
 
+
+class fmi_cosim
+{
+
+    setInput("variable name");
+    getOutput("variable name");
+    setFMUPath("Path");
+    char logFMU;
+private:
+    void loadFMU("path",FMU);
+    void FMU
+
+}
