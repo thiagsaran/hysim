@@ -2,7 +2,7 @@
  * sim_support.h
  * Functions used by the FMU simulatios fmusim_me and fmusim_cs.
  * Copyright 2011 QTronic GmbH. All rights reserved. 
- * -------------------------------------------------------------------------*/ 
+ * -------------------------------------------------------------------------*/
 
 // Used 7z options, version 4.57:
 // -x   Extracts files from an archive with their full paths in the current dir, or in an output dir if specified
@@ -28,7 +28,6 @@
 // Use these for OpenModelica 1.8.1
 #define DLL_DIR2   "binaries/darwin-x86_64/"
 #define DLL_SUFFIX2 ".so"
-
 
 #else /*__APPLE__*/
 // Linux
@@ -56,13 +55,16 @@
 #define SEVEN_ZIP_OUT_OF_MEMORY 8
 #define SEVEN_ZIP_STOPPED_BY_USER 255
 
-void fmuLogger(fmiComponent c, fmiString instanceName, fmiStatus status, fmiString category, fmiString message, ...);
+void fmuLogger(fmiComponent c, fmiString instanceName, fmiStatus status,
+		fmiString category, fmiString message, ...);
 int unzip(const char *zipPath, const char *outPath);
-void parseArguments(int argc, char *argv[], char** fmuFileName, double* tEnd, double* h, int* loggingOn, char* csv_separator);
+void parseArguments(int argc, char *argv[], char** fmuFileName, double* tEnd,
+		double* h, int* loggingOn, char* csv_separator);
 char* loadFMU(const char* fmuFileName);
 #ifndef _MSC_VER
-typedef int boolean; 
+typedef int boolean;
 #endif
-void outputRow(FMU *fmu, fmiComponent c, double time, FILE* file, char separator, boolean header);
+void outputRow(FMU *fmu, fmiComponent c, double time, FILE* file,
+		char separator, boolean header);
 int error(const char* message);
 void printHelp(const char* fmusim);

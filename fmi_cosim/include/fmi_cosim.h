@@ -71,7 +71,7 @@ typedef struct {
     fGetInteger getInteger;
     fGetBoolean getBoolean;
     fGetString getString;
-    fInstantiateSlave instantiateSlave;
+	fInstantiateSlave instantiateSlave;
     fInitializeSlave initializeSlave;
     fTerminateSlave terminateSlave;
     fResetSlave resetSlave;
