@@ -60,7 +60,7 @@ void fmuLogger(fmiComponent c, fmiString instanceName, fmiStatus status,
 int unzip(const char *zipPath, const char *outPath);
 void parseArguments(int argc, char *argv[], char** fmuFileName, double* tEnd,
 		double* h, int* loggingOn, char* csv_separator);
-char* loadFMU(const char* fmuFileName);
+char* loadFMU(const char* fmuFileName,FMU *fmu);
 #ifndef _MSC_VER
 typedef int boolean;
 #endif
