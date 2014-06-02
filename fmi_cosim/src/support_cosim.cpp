@@ -171,7 +171,7 @@ static char* getTmpPath() {
 		fprintf(stderr, "Couldn't create temporary directory\n");
 		exit(1);
 	}
-	char * results = (char *)calloc(sizeof(char), strlen(tmp) + 2);
+	char * results = (char *) calloc(sizeof(char), strlen(tmp) + 2);
 	strncat(results, tmp, strlen(tmp));
 	return strcat(results, "/");
 }
@@ -210,19 +210,25 @@ static int loadDll(const char* dllPath, FMU *fmu) {
 #ifdef _MSC_VER
 	HANDLE h = LoadLibrary(dllPath);
 #else
+
 	printf("dllPath = %s\n", dllPath);
 	HANDLE h = dlopen(dllPath, RTLD_LAZY);
+	printf("printing debug1");
+	printf("222 handle = %x\n", h);
+	printf("printing debug2");
 #endif
 	if (!h) {
 		printf("error: Could not load %s\n", dllPath);
+
 #ifdef _MSC_VER
 #else
 		printf("The error was: %s\n", dlerror());
 #endif
 		return 0; // failure
 	}
+	printf("printing debug1 %x",fmu->dllHandle);
 	fmu->dllHandle = h;
-
+	printf("printing debug2");
 #ifdef FMI_COSIMULATION   
 	fmu->getTypesPlatform = (fGetTypesPlatform) getAdr(&s, fmu,
 			"fmiGetTypesPlatform");
@@ -258,6 +264,7 @@ static int loadDll(const char* dllPath, FMU *fmu) {
 	fmu->getStringStatus = (fGetStringStatus) getAdr(&x, fmu,
 			"fmiGetStringStatus");
 
+
 #else // FMI for Model Exchange 1.0
 	fmu->getModelTypesPlatform = (fGetModelTypesPlatform) getAdr(&s, fmu, "fmiGetModelTypesPlatform");
 	fmu->instantiateModel = (fInstantiateModel) getAdr(&s, fmu, "fmiInstantiateModel");
@@ -285,6 +292,7 @@ static int loadDll(const char* dllPath, FMU *fmu) {
 	fmu->getInteger = (fGetInteger) getAdr(&s, fmu, "fmiGetInteger");
 	fmu->getBoolean = (fGetBoolean) getAdr(&s, fmu, "fmiGetBoolean");
 	fmu->getString = (fGetString) getAdr(&s, fmu, "fmiGetString");
+	printf("printing debug 3");
 	return s;
 }
 
@@ -324,7 +332,8 @@ char* loadFMU(const char* fmuFileName) {
 		exit(EXIT_FAILURE);
 
 	// parse tmpPath\modelDescription.xml
-	xmlPath = (char*)calloc(sizeof(char), strlen(tmpPath) + strlen(XML_FILE) + 1);
+	xmlPath = (char*) calloc(sizeof(char),
+			strlen(tmpPath) + strlen(XML_FILE) + 1);
 	sprintf(xmlPath, "%s%s", tmpPath, XML_FILE);
 	fmu.modelDescription = parse(xmlPath);
 	free(xmlPath);
@@ -333,7 +342,7 @@ char* loadFMU(const char* fmuFileName) {
 	printModelDescription(fmu.modelDescription);
 
 	// load the FMU dll
-	dllPath = (char*)calloc(sizeof(char),
+	dllPath = (char*) calloc(sizeof(char),
 			strlen(tmpPath) + strlen(DLL_DIR)
 					+ strlen(getModelIdentifier(fmu.modelDescription))
 					+ strlen(DLL_SUFFIX) + 1);
@@ -341,7 +350,7 @@ char* loadFMU(const char* fmuFileName) {
 			getModelIdentifier(fmu.modelDescription), DLL_SUFFIX);
 	if (!loadDll(dllPath, &fmu)) {
 		// try the alternative directory and suffix
-		dllPath = (char*)calloc(sizeof(char),
+		dllPath = (char*) calloc(sizeof(char),
 				strlen(tmpPath) + strlen(DLL_DIR2)
 						+ strlen(getModelIdentifier(fmu.modelDescription))
 						+ strlen(DLL_SUFFIX2) + 1);
@@ -357,54 +366,61 @@ char* loadFMU(const char* fmuFileName) {
 	return tmpPath;
 }
 
-char* ldFMU(const char *path,FMU fmu){
+char* ldFMU(char *path, FMU *fmu) {
 	char* fmuPath;
-		char* tmpPath;
-		char* xmlPath;
-		char* dllPath;
+	char* tmpPath;
+	char* xmlPath;
+	char* dllPath;
 
-		// get absolute path to FMU, NULL if not found
-		fmuPath = getFmuPath(path);
-		if (!fmuPath)
+
+	// get absolute path to FMU, NULL if not found
+	fmuPath = getFmuPath(path);
+	if (!fmuPath)
+		exit(EXIT_FAILURE);
+
+	// unzip the FMU to the tmpPath directory
+	tmpPath = getTmpPath();
+	if (!unzip(fmuPath, tmpPath))
+		exit(EXIT_FAILURE);
+
+	// parse tmpPath\modelDescription.xml
+	xmlPath = (char*) calloc(sizeof(char),
+			strlen(tmpPath) + strlen(XML_FILE) + 1);
+	sprintf(xmlPath, "%s%s", tmpPath, XML_FILE);
+	fmu->modelDescription = parse(xmlPath);
+	free(xmlPath);
+	if (!fmu->modelDescription)
+		exit(EXIT_FAILURE);
+	printModelDescription(fmu->modelDescription);
+
+////	// load the FMU dll
+	dllPath = (char*) calloc(sizeof(char),
+			strlen(tmpPath) + strlen(DLL_DIR)
+					+ strlen(getModelIdentifier(fmu->modelDescription))
+					+ strlen(DLL_SUFFIX) + 1);
+	sprintf(dllPath, "%s%s%s%s", tmpPath, DLL_DIR,
+			getModelIdentifier(fmu->modelDescription), DLL_SUFFIX);
+	printf("\nprinting debug %s",dllPath);
+	int s = loadDll(dllPath,fmu);
+//printf("\nprinting debug value returned  %d",s);
+    if (!s){
+		printf("printing debug");
+		// try the alternative directory and suffix
+		dllPath = (char*) calloc(sizeof(char),
+				strlen(tmpPath) + strlen(DLL_DIR2)
+						+ strlen(getModelIdentifier(fmu->modelDescription))
+						+ strlen(DLL_SUFFIX2) + 1);
+		sprintf(dllPath, "%s%s%s%s", tmpPath, DLL_DIR2,
+				getModelIdentifier(fmu->modelDescription), DLL_SUFFIX2);
+		if (!loadDll(dllPath, fmu))
 			exit(EXIT_FAILURE);
 
-		// unzip the FMU to the tmpPath directory
-		tmpPath = getTmpPath();
-		if (!unzip(fmuPath, tmpPath))
-			exit(EXIT_FAILURE);
+	}
 
-		// parse tmpPath\modelDescription.xml
-		xmlPath = (char*)calloc(sizeof(char), strlen(tmpPath) + strlen(XML_FILE) + 1);
-		sprintf(xmlPath, "%s%s", tmpPath, XML_FILE);
-		fmu.modelDescription = parse(xmlPath);
-		free(xmlPath);
-		if (!fmu.modelDescription)
-			exit(EXIT_FAILURE);
-		printModelDescription(fmu.modelDescription);
-
-		// load the FMU dll
-		dllPath = (char*)calloc(sizeof(char),
-				strlen(tmpPath) + strlen(DLL_DIR)
-						+ strlen(getModelIdentifier(fmu.modelDescription))
-						+ strlen(DLL_SUFFIX) + 1);
-		sprintf(dllPath, "%s%s%s%s", tmpPath, DLL_DIR,
-				getModelIdentifier(fmu.modelDescription), DLL_SUFFIX);
-		if (!loadDll(dllPath, &fmu)) {
-			// try the alternative directory and suffix
-			dllPath = (char*)calloc(sizeof(char),
-					strlen(tmpPath) + strlen(DLL_DIR2)
-							+ strlen(getModelIdentifier(fmu.modelDescription))
-							+ strlen(DLL_SUFFIX2) + 1);
-			sprintf(dllPath, "%s%s%s%s", tmpPath, DLL_DIR2,
-					getModelIdentifier(fmu.modelDescription), DLL_SUFFIX2);
-			if (!loadDll(dllPath, &fmu))
-				exit(EXIT_FAILURE);
-		}
-
-		free(dllPath);
-		free(fmuPath);
-		//free(tmpPath);
-		return tmpPath;
+	//free(dllPath);
+	//free(fmuPath);
+	//free(tmpPath);
+	return tmpPath;
 }
 
 static void doubleToCommaString(char* buffer, double r) {
@@ -528,7 +544,7 @@ static ScalarVariable* getSV(FMU* fmu, char type, fmiValueReference vr) {
 	Elm tp;
 	ScalarVariable** vars = fmu->modelDescription->modelVariables;
 	if (vr == fmiUndefinedValueReference)
-		return NULL ;
+		return NULL;
 	switch (type) {
 	case 'r':
 		tp = elm_Real;
@@ -548,7 +564,7 @@ static ScalarVariable* getSV(FMU* fmu, char type, fmiValueReference vr) {
 		if (vr == getValueReference(sv) && tp == sv->typeSpec->type)
 			return sv;
 	}
-	return NULL ;
+	return NULL;
 }
 
 // replace e.g. #r1365# by variable name and ## by # in message

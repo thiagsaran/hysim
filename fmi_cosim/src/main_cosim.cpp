@@ -32,10 +32,19 @@
 #include <string.h>
 #include <iostream>
 #include <string>
+
 #include <config_cosim.h>
 #include <fmi_cosim.h>
+
 #include <support_cosim.h>
+
 using namespace std;
+
+
+extern "C" {
+
+char* ldFMU(char *path,FMU *fmu);
+}
 
 FMU fmu; // the fmu to simulate
 
@@ -184,15 +193,17 @@ struct var {
 class fmi_cosim {
 	var tmp_in, tmp_out, tmp_par;
 public:
-	fmi_cosim(const char* FMU_Path, fmiReal Tcurr, fmiReal Tdelta) {
+	fmi_cosim(char* FMU_Path, fmiReal Tcurr, fmiReal Tdelta) {
 		T_curr = Tcurr;
 		T_delta = Tdelta;
-		tmp_FMU_Path = ldFMU(FMU_Path, &fmu);
+		tmp_FMU_Path = buildFMU(FMU_Path);
 	}
 	~fmi_cosim();
 
-
-	int simulateFMU(double currTime, double deltaTime,
+	 FMU fmu_g;
+	 fmiComponent c;                  // instance of the fmu
+	 ModelDescription *md;            // handle to the parsed XML file
+	 int simulateFMU(double currTime, double deltaTime,
 			double endTime);
 	var* setInput(char* varName, var* inVar);
 	var* getInput(char* varName, var* outVar);
@@ -202,14 +213,18 @@ public:
 
 	var* getOutput(char* inVar, var* outVar);
 
-	static FMU fmu;
-	static fmiComponent c;                  // instance of the fmu
-	static ModelDescription* md;            // handle to the parsed XML file
+	char* buildFMU(char* FMU_Path){
+		printf("printing add %x",&fmu_g);
+		return ldFMU(FMU_Path, &fmu_g);
+	}
+//	char* ldFMU(const char *,FMU *);
+
 	const char* tmp_FMU_Path;
 	fmiReal T_curr, T_delta;
 	void rm_tmpFMU(const char*);
 	// end simulation
 };
+
 
 fmi_cosim::~fmi_cosim() {
 
@@ -217,8 +232,8 @@ fmi_cosim::~fmi_cosim() {
 	FreeLibrary(fmu.dllHandle);
 #else
 	dlclose(fmu.dllHandle);
-	this->fmu.terminateSlave(c);
-	this->fmu.freeSlaveInstance(c);
+	this->fmu_g.terminateSlave(c);
+	this->fmu_g.freeSlaveInstance(c);
 	rm_tmpFMU(tmp_FMU_Path);
 #endif
 
@@ -260,7 +275,17 @@ var* fmi_cosim::setInput(char *inVar, var* tmp_in) {
 	}
 	return tmp_in;
 }
+var* fmi_cosim::getInput(char *inVar, var *tmp_in) {
+	return fmi_cosim::getOutput(inVar, tmp_in);
+}
 
+var* fmi_cosim::setParam(char *inVar, var *tmp_in) {
+	return fmi_cosim::setInput(inVar, tmp_in);
+}
+
+var* fmi_cosim::getParam(char *inVar, var *tmp_in) {
+	return fmi_cosim::getOutput(inVar, tmp_in);
+}
 var* fmi_cosim::getOutput(char *inVar, var* tmp_in) {
 
 	ScalarVariable** vars = fmu.modelDescription->modelVariables;
@@ -296,17 +321,7 @@ var* fmi_cosim::getOutput(char *inVar, var* tmp_in) {
 	return tmp_in;
 }
 
-var* fmi_cosim::getInput(char *inVar, var *tmp_in) {
-	return fmi_cosim::getOutput(inVar, tmp_in);
-}
 
-var* fmi_cosim::setParam(char *inVar, var *tmp_in) {
-	return fmi_cosim::setInput(inVar, tmp_in);
-}
-
-var* fmi_cosim::getParam(char *inVar, var *tmp_in) {
-	return fmi_cosim::getOutput(inVar, tmp_in);
-}
 
 void fmi_cosim::rm_tmpFMU(const char* tmpPath) {
 	const char* fmt_cmd = "rm -rf";
@@ -332,7 +347,7 @@ int fmi_cosim::simulateFMU(double currTime, double deltaTime,
 	int nSteps = 0;
 
 // instantiate the fmu
-	fmi_cosim::md = fmu.modelDescription;
+	md = fmu.modelDescription;
 	guid = getString(md, att_guid);
 	callbacks.logger = fmuLogger;
 	callbacks.allocateMemory = calloc;
@@ -357,8 +372,10 @@ int fmi_cosim::simulateFMU(double currTime, double deltaTime,
 
 int main(){
 
-	fmi_cosim fmu1("/softwares/git/fmi_cosim/models/ControlledTemperature.fmu",1,0.1);
+	char a[]="../models/ControlledTemperature.fmu";
 
+	fmi_cosim fmu1(a,1,0.1);
+	cout<<"done";
 	return 0;
 }
 
