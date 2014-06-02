@@ -169,22 +169,42 @@ int main(int argc, char *argv[]) {
 
 #ifndef FMI_WRAP
 
-class fmi_cosim {
+struct var {
+	fmiString name;
+	union {
+		fmiReal r;
+		fmiInteger i;
+		fmiString s;
+		fmiBoolean b;
+	} value;
+	fmiStatus stat;
+	fmiValueReference vr;bool variableParsed = false;
+};
 
+class fmi_cosim {
+	var tmp_in, tmp_out, tmp_par;
+public:
 	fmi_cosim(const char* FMU_Path, fmiReal Tcurr, fmiReal Tdelta) {
 		T_curr = Tcurr;
 		T_delta = Tdelta;
-		tmp_FMU_Path = loadFMU(FMU_Path, &fmu);
+		tmp_FMU_Path = ldFMU(FMU_Path, &fmu);
 	}
 	~fmi_cosim();
-public:
-	static int simulateFMU(double, double, fmiBoolean, char);
-	void* setInput(char* inputVarName);
-	void* getOutput(char* outputVarName);
-	void* iniParameter(char* parameterName);
-private:
-	FMU fmu;
-	fmiComponent c;                  // instance of the fmu
+
+
+	int simulateFMU(double currTime, double deltaTime,
+			double endTime);
+	var* setInput(char* varName, var* inVar);
+	var* getInput(char* varName, var* outVar);
+
+	var* setParam(char* varName, var* inParam);
+	var* getParam(char* varName, var* outParam);
+
+	var* getOutput(char* inVar, var* outVar);
+
+	static FMU fmu;
+	static fmiComponent c;                  // instance of the fmu
+	static ModelDescription* md;            // handle to the parsed XML file
 	const char* tmp_FMU_Path;
 	fmiReal T_curr, T_delta;
 	void rm_tmpFMU(const char*);
@@ -205,6 +225,89 @@ fmi_cosim::~fmi_cosim() {
 }
 ;
 
+var* fmi_cosim::setInput(char *inVar, var* tmp_in) {
+
+	ScalarVariable** vars = fmu.modelDescription->modelVariables;
+	fmiValueReference vr;
+	ScalarVariable* sv;
+	if (tmp_in->variableParsed == false) {
+		for (int k = 0; vars[k]; k++) {
+			sv = vars[k];
+			char* s = strdup(getName(sv));
+			if (strcmp(s, tmp_in->name)) {
+				tmp_in->vr = getValueReference(sv);
+				tmp_in->variableParsed = true;
+			}
+		}
+	}
+	switch (sv->typeSpec->type) {
+	case elm_Real:
+		tmp_in->stat = fmu.setReal(c, &tmp_in->vr, 1, &tmp_in->value.r);
+		break;
+	case elm_Integer:
+	case elm_Enumeration:
+		tmp_in->stat = fmu.setInteger(c, &tmp_in->vr, 1, &tmp_in->value.i);
+		break;
+	case elm_Boolean:
+		tmp_in->stat = fmu.setBoolean(c, &tmp_in->vr, 1, &tmp_in->value.b);
+		break;
+	case elm_String:
+		tmp_in->stat = fmu.setString(c, &tmp_in->vr, 1, &tmp_in->value.s);
+		break;
+	default:
+		printf("Unexpected Type error %d", sv->typeSpec->type);
+
+	}
+	return tmp_in;
+}
+
+var* fmi_cosim::getOutput(char *inVar, var* tmp_in) {
+
+	ScalarVariable** vars = fmu.modelDescription->modelVariables;
+	fmiValueReference vr;
+	ScalarVariable* sv;
+	if (tmp_in->variableParsed == false) {
+		for (int k = 0; vars[k]; k++) {
+			sv = vars[k];
+			char* s = strdup(getName(sv));
+			if (strcmp(s, tmp_in->name)) {
+				tmp_in->vr = getValueReference(sv);
+				tmp_in->variableParsed = true;
+			}
+		}
+	}
+	switch (sv->typeSpec->type) {
+	case elm_Real:
+		tmp_in->stat = fmu.getReal(c, &tmp_in->vr, 1, &tmp_in->value.r);
+		break;
+	case elm_Integer:
+	case elm_Enumeration:
+		tmp_in->stat = fmu.getInteger(c, &tmp_in->vr, 1, &tmp_in->value.i);
+		break;
+	case elm_Boolean:
+		tmp_in->stat = fmu.getBoolean(c, &tmp_in->vr, 1, &tmp_in->value.b);
+		break;
+	case elm_String:
+		tmp_in->stat = fmu.getString(c, &tmp_in->vr, 1, &tmp_in->value.s);
+		break;
+	default:
+		printf("Unexpected Type error %d", sv->typeSpec->type);
+	}
+	return tmp_in;
+}
+
+var* fmi_cosim::getInput(char *inVar, var *tmp_in) {
+	return fmi_cosim::getOutput(inVar, tmp_in);
+}
+
+var* fmi_cosim::setParam(char *inVar, var *tmp_in) {
+	return fmi_cosim::setInput(inVar, tmp_in);
+}
+
+var* fmi_cosim::getParam(char *inVar, var *tmp_in) {
+	return fmi_cosim::getOutput(inVar, tmp_in);
+}
+
 void fmi_cosim::rm_tmpFMU(const char* tmpPath) {
 	const char* fmt_cmd = "rm -rf";
 	char rmcmd[50];
@@ -213,10 +316,9 @@ void fmi_cosim::rm_tmpFMU(const char* tmpPath) {
 	printf("\n temporary folder for FMU unzip is removed\n");
 }
 
-static int fmi_cosim::simulateFMU(double tEnd, double h, fmiBoolean loggingOn,
-		char separator) {
+int fmi_cosim::simulateFMU(double currTime, double deltaTime,
+		double endTime) {
 	double time;
-	double tStart = 0;               // start time
 	const char* guid;                // global unique id of the fmu
 
 	fmiStatus fmiFlag;               // return code of the fmu functions
@@ -226,54 +328,38 @@ static int fmi_cosim::simulateFMU(double tEnd, double h, fmiBoolean loggingOn,
 	fmiBoolean visible = fmiFalse;   // no simulator user interface
 	fmiBoolean interactive = fmiFalse; // simulation run without user interaction
 	fmiCallbackFunctions callbacks;  // called by the model during simulation
-	ModelDescription* md;            // handle to the parsed XML file
+
 	int nSteps = 0;
 
-	// instantiate the fmu
-	md = this->fmu.modelDescription;
+// instantiate the fmu
+	fmi_cosim::md = fmu.modelDescription;
 	guid = getString(md, att_guid);
 	callbacks.logger = fmuLogger;
 	callbacks.allocateMemory = calloc;
 	callbacks.freeMemory = free;
 	callbacks.stepFinished = NULL; // fmiDoStep has to be carried out synchronously
-	c = this->fmu.instantiateSlave(getModelIdentifier(md), guid, fmuLocation,
-			mimeType, timeout, visible, interactive, callbacks, loggingOn);
+	c = fmu.instantiateSlave(getModelIdentifier(md), guid, fmuLocation,
+			mimeType, timeout, visible, interactive, callbacks, fmiTrue);
 	if (!c)
 		return error("could not instantiate model");
-
-#ifdef TRACE_LOG
-	FILE* file;
-	// open result file
-	if (!(file = fopen(RESULT_FILE, "w"))) {
-		printf("could not write %s because:\n", RESULT_FILE);
-		printf("    %s\n", strerror(errno));
-		return 0; // failure
-	}
-#endif
-	// StopTimeDefined=fmiFalse means: ignore value of tEnd
-	fmiFlag = this->fmu.initializeSlave(c, tStart, fmiTrue, tEnd);
+// StopTimeDefined=fmiFalse means: ignore value of tEnd
+	fmiFlag = fmu.initializeSlave(c, currTime, fmiTrue, endTime);
 	if (fmiFlag > fmiWarning)
 		return error("could not initialize model");
-#ifdef TRACE_LOG
-	// output solution for time t0
-	outputRow((FMU*) this->fmu, c, tStart, file, separator, TRUE); // output column names
-	outputRow((FMU*) this->fmu, c, tStart, file, separator, FALSE); // output values
-#endif
-	time += h;
-	fmiFlag = this->fmu.doStep(c, time, h, fmiTrue);
+	fmiFlag = fmu.doStep(c, currTime, deltaTime, fmiTrue);
 	if (fmiFlag != fmiOK)
 		return error("could not complete simulation of the model");
-
-#ifdef TRACE_LOG
-	outputRow((FMU*) this->fmu, c, time, file, separator, FALSE); // output values for this step
-#endif
 	nSteps++;
 
-#ifdef TRACE_LOG
-	fclose(file);
-#endif
 // print simulation summary
-	return 1; // success
+	return fmiOK; // success
+}
+
+int main(){
+
+	fmi_cosim fmu1("/softwares/git/fmi_cosim/models/ControlledTemperature.fmu",1,0.1);
+
+	return 0;
 }
 
 #endif
