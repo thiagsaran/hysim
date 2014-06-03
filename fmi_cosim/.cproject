@@ -226,14 +226,14 @@
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[exe] cosim_main" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[exe] cosim_main" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>cosim_main</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[exe] cosim_main/fast" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[exe] cosim_main/fast" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>cosim_main/fast</buildTarget>
@@ -249,103 +249,103 @@
 </target>
 <target name="Clean" path="[Targets]/[exe] cosim_main" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/opt/local/bin/cmake</buildCommand>
-<buildArguments>-E chdir "/Users/thiag/priv-git/fmi_cosim/bin" "/opt/local/bin/cmake" -P "CMakeFiles/cosim_main.dir/cmake_clean.cmake"</buildArguments>
+<buildArguments>-E chdir "/Users/thiag/priv-git/fmi_cosim/src" "/opt/local/bin/cmake" -P "CMakeFiles/cosim_main.dir/cmake_clean.cmake"</buildArguments>
 <buildTarget></buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name=": all" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name=": all" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>all</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name=": clean" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name=": clean" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>clean</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[obj] main_cosim.cpp.o" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[obj] main_cosim.cpp.o" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>main_cosim.cpp.o</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[pre] main_cosim.cpp.i" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[pre] main_cosim.cpp.i" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>main_cosim.cpp.i</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[to asm] main_cosim.cpp.s" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[to asm] main_cosim.cpp.s" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>main_cosim.cpp.s</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[obj] stack.cpp.o" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[obj] stack.cpp.o" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>stack.cpp.o</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[pre] stack.cpp.i" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[pre] stack.cpp.i" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>stack.cpp.i</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[to asm] stack.cpp.s" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[to asm] stack.cpp.s" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>stack.cpp.s</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[obj] support_cosim.cpp.o" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[obj] support_cosim.cpp.o" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>support_cosim.cpp.o</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[pre] support_cosim.cpp.i" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[pre] support_cosim.cpp.i" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>support_cosim.cpp.i</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[to asm] support_cosim.cpp.s" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[to asm] support_cosim.cpp.s" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>support_cosim.cpp.s</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[obj] xml_parser.cpp.o" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[obj] xml_parser.cpp.o" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>xml_parser.cpp.o</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[pre] xml_parser.cpp.i" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[pre] xml_parser.cpp.i" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>xml_parser.cpp.i</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>
-<target name="[to asm] xml_parser.cpp.s" path="bin" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="[to asm] xml_parser.cpp.s" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>/usr/bin/make</buildCommand>
 <buildArguments>-j12</buildArguments>
 <buildTarget>xml_parser.cpp.s</buildTarget>
