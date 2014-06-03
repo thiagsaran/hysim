@@ -213,7 +213,7 @@ public:
 
 	var* getOutput(char* inVar, var* outVar);
 
-	fmiStatus clearFMU();
+	fmiStatus unldFMU();
 
 	char* buildFMU(char* FMU_Path){
 		return ldFMU(FMU_Path, &fmu_g);
@@ -226,7 +226,7 @@ public:
 	// end simulation
 };
 
-fmiStatus fmi_cosim::clearFMU(){
+fmiStatus fmi_cosim::unldFMU(){
 #ifdef _MSC_VER
 	FreeLibrary(fmu.dllHandle);
 #else
@@ -380,7 +380,7 @@ int main(){
 	fmi_cosim fmu1(a,1,0.1);
 	int s=fmu1.simulateFMU(1,0.1,2);
 	printf("%s ,%d ",fmu1.tmp_FMU_Path,s);
-	fmu1.clearFMU();
+	fmu1.unldFMU();
 	cout<<"done";
 	return 0;
 }
