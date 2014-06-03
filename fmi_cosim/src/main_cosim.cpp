@@ -213,6 +213,8 @@ public:
 
 	var* getOutput(char* inVar, var* outVar);
 
+	fmiStatus clearFMU();
+
 	char* buildFMU(char* FMU_Path){
 		return ldFMU(FMU_Path, &fmu_g);
 	}
@@ -224,9 +226,7 @@ public:
 	// end simulation
 };
 
-
-fmi_cosim::~fmi_cosim() {
-
+fmiStatus fmi_cosim::clearFMU(){
 #ifdef _MSC_VER
 	FreeLibrary(fmu.dllHandle);
 #else
@@ -235,6 +235,11 @@ fmi_cosim::~fmi_cosim() {
 	//fmu_g.freeSlaveInstance(c);
 	rm_tmpFMU(tmp_FMU_Path);
 #endif
+	return fmiOK;
+}
+
+fmi_cosim::~fmi_cosim() {
+
 
 };
 
@@ -370,11 +375,12 @@ int fmi_cosim::simulateFMU(double currTime, double deltaTime,
 
 int main(){
 
-	char a[]="models/ControlledTemperature.fmu";
+	char a[]="/Users/thiag/priv-git/fmi_cosim/models/ControlledTemperature.fmu";
 
 	fmi_cosim fmu1(a,1,0.1);
 	int s=fmu1.simulateFMU(1,0.1,2);
 	printf("%s ,%d ",fmu1.tmp_FMU_Path,s);
+	fmu1.clearFMU();
 	cout<<"done";
 	return 0;
 }
