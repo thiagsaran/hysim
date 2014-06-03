@@ -214,7 +214,6 @@ public:
 	var* getOutput(char* inVar, var* outVar);
 
 	char* buildFMU(char* FMU_Path){
-		printf("printing add %x",&fmu_g);
 		return ldFMU(FMU_Path, &fmu_g);
 	}
 //	char* ldFMU(const char *,FMU *);
@@ -231,14 +230,13 @@ fmi_cosim::~fmi_cosim() {
 #ifdef _MSC_VER
 	FreeLibrary(fmu.dllHandle);
 #else
-	dlclose(fmu.dllHandle);
-	this->fmu_g.terminateSlave(c);
-	this->fmu_g.freeSlaveInstance(c);
+	dlclose(fmu_g.dllHandle);
+	//fmu_g.terminateSlave(c);
+	//fmu_g.freeSlaveInstance(c);
 	rm_tmpFMU(tmp_FMU_Path);
 #endif
 
-}
-;
+};
 
 var* fmi_cosim::setInput(char *inVar, var* tmp_in) {
 
@@ -344,27 +342,27 @@ int fmi_cosim::simulateFMU(double currTime, double deltaTime,
 	fmiBoolean interactive = fmiFalse; // simulation run without user interaction
 	fmiCallbackFunctions callbacks;  // called by the model during simulation
 
-	int nSteps = 0;
+//	int nSteps = 0;
 
 // instantiate the fmu
-	md = fmu.modelDescription;
+	md = fmu_g.modelDescription;
 	guid = getString(md, att_guid);
 	callbacks.logger = fmuLogger;
 	callbacks.allocateMemory = calloc;
 	callbacks.freeMemory = free;
 	callbacks.stepFinished = NULL; // fmiDoStep has to be carried out synchronously
-	c = fmu.instantiateSlave(getModelIdentifier(md), guid, fmuLocation,
+	c = fmu_g.instantiateSlave(getModelIdentifier(md), guid, fmuLocation,
 			mimeType, timeout, visible, interactive, callbacks, fmiTrue);
 	if (!c)
 		return error("could not instantiate model");
 // StopTimeDefined=fmiFalse means: ignore value of tEnd
-	fmiFlag = fmu.initializeSlave(c, currTime, fmiTrue, endTime);
+	fmiFlag = fmu_g.initializeSlave(c, currTime, fmiTrue, endTime);
 	if (fmiFlag > fmiWarning)
 		return error("could not initialize model");
-	fmiFlag = fmu.doStep(c, currTime, deltaTime, fmiTrue);
+	fmiFlag = fmu_g.doStep(c, currTime, deltaTime, fmiTrue);
 	if (fmiFlag != fmiOK)
 		return error("could not complete simulation of the model");
-	nSteps++;
+//	nSteps++;
 
 // print simulation summary
 	return fmiOK; // success
@@ -372,9 +370,11 @@ int fmi_cosim::simulateFMU(double currTime, double deltaTime,
 
 int main(){
 
-	char a[]="../models/ControlledTemperature.fmu";
+	char a[]="models/ControlledTemperature.fmu";
 
 	fmi_cosim fmu1(a,1,0.1);
+	int s=fmu1.simulateFMU(1,0.1,2);
+	printf("%s ,%d ",fmu1.tmp_FMU_Path,s);
 	cout<<"done";
 	return 0;
 }

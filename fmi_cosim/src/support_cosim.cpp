@@ -210,12 +210,8 @@ static int loadDll(const char* dllPath, FMU *fmu) {
 #ifdef _MSC_VER
 	HANDLE h = LoadLibrary(dllPath);
 #else
-
 	printf("dllPath = %s\n", dllPath);
 	HANDLE h = dlopen(dllPath, RTLD_LAZY);
-	printf("printing debug1");
-	printf("222 handle = %x\n", h);
-	printf("printing debug2");
 #endif
 	if (!h) {
 		printf("error: Could not load %s\n", dllPath);
@@ -226,10 +222,9 @@ static int loadDll(const char* dllPath, FMU *fmu) {
 #endif
 		return 0; // failure
 	}
-	printf("printing debug1 %x",fmu->dllHandle);
 	fmu->dllHandle = h;
-	printf("printing debug2");
-#ifdef FMI_COSIMULATION   
+
+	#ifdef FMI_COSIMULATION
 	fmu->getTypesPlatform = (fGetTypesPlatform) getAdr(&s, fmu,
 			"fmiGetTypesPlatform");
 	if (s == 0) {
@@ -292,7 +287,7 @@ static int loadDll(const char* dllPath, FMU *fmu) {
 	fmu->getInteger = (fGetInteger) getAdr(&s, fmu, "fmiGetInteger");
 	fmu->getBoolean = (fGetBoolean) getAdr(&s, fmu, "fmiGetBoolean");
 	fmu->getString = (fGetString) getAdr(&s, fmu, "fmiGetString");
-	printf("printing debug 3");
+
 	return s;
 }
 
@@ -400,7 +395,7 @@ char* ldFMU(char *path, FMU *fmu) {
 					+ strlen(DLL_SUFFIX) + 1);
 	sprintf(dllPath, "%s%s%s%s", tmpPath, DLL_DIR,
 			getModelIdentifier(fmu->modelDescription), DLL_SUFFIX);
-	printf("\nprinting debug %s",dllPath);
+
 	int s = loadDll(dllPath,fmu);
 //printf("\nprinting debug value returned  %d",s);
     if (!s){
@@ -417,8 +412,8 @@ char* ldFMU(char *path, FMU *fmu) {
 
 	}
 
-	//free(dllPath);
-	//free(fmuPath);
+	free(dllPath);
+	free(fmuPath);
 	//free(tmpPath);
 	return tmpPath;
 }
