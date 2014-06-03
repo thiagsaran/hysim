@@ -375,7 +375,7 @@ int fmi_cosim::simulateFMU(double currTime, double deltaTime,
 
 int main(){
 
-	char a[]="/Users/thiag/priv-git/fmi_cosim/models/ControlledTemperature.fmu";
+	char a[]="models/ControlledTemperature.fmu";
 
 	fmi_cosim fmu1(a,1,0.1);
 	int s=fmu1.simulateFMU(1,0.1,2);
