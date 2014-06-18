@@ -40,10 +40,9 @@
 
 using namespace std;
 
-
 extern "C" {
 
-char* ldFMU(char *path,FMU *fmu);
+char* ldFMU(char *path, FMU *fmu);
 }
 
 FMU fmu; // the fmu to simulate
@@ -179,6 +178,7 @@ int main(int argc, char *argv[]) {
 #ifndef FMI_WRAP
 
 struct var {
+
 	fmiString name;
 	union {
 		fmiReal r;
@@ -187,11 +187,20 @@ struct var {
 		fmiBoolean b;
 	} value;
 	fmiStatus stat;
-	fmiValueReference vr;bool variableParsed = false;
+	fmiValueReference vr;
+
+	bool variableParsed = false;
+
+	var(){};
+	var(fmiString varname) {
+		name = varname;
+	};
 };
 
+
 class fmi_cosim {
-	var tmp_in, tmp_out, tmp_par;
+	var tmp_in;
+	var tmp_out, tmp_par;
 public:
 	fmi_cosim(char* FMU_Path, fmiReal Tcurr, fmiReal Tdelta) {
 		T_curr = Tcurr;
@@ -200,11 +209,10 @@ public:
 	}
 	~fmi_cosim();
 
-	 FMU fmu_g;
-	 fmiComponent c;                  // instance of the fmu
-	 ModelDescription *md;            // handle to the parsed XML file
-	 int simulateFMU(double currTime, double deltaTime,
-			double endTime);
+	FMU fmu_g;
+	fmiComponent c;                  // instance of the fmu
+	ModelDescription *md;            // handle to the parsed XML file
+	int simulateFMU(double currTime, double deltaTime, double endTime);
 	var* setInput(char* varName, var* inVar);
 	var* getInput(char* varName, var* outVar);
 
@@ -215,7 +223,7 @@ public:
 
 	fmiStatus unldFMU();
 
-	char* buildFMU(char* FMU_Path){
+	char* buildFMU(char* FMU_Path) {
 		return ldFMU(FMU_Path, &fmu_g);
 	}
 //	char* ldFMU(const char *,FMU *);
@@ -226,7 +234,7 @@ public:
 	// end simulation
 };
 
-fmiStatus fmi_cosim::unldFMU(){
+fmiStatus fmi_cosim::unldFMU() {
 #ifdef _MSC_VER
 	FreeLibrary(fmu.dllHandle);
 #else
@@ -240,8 +248,8 @@ fmiStatus fmi_cosim::unldFMU(){
 
 fmi_cosim::~fmi_cosim() {
 
-
-};
+}
+;
 
 var* fmi_cosim::setInput(char *inVar, var* tmp_in) {
 
@@ -324,8 +332,6 @@ var* fmi_cosim::getOutput(char *inVar, var* tmp_in) {
 	return tmp_in;
 }
 
-
-
 void fmi_cosim::rm_tmpFMU(const char* tmpPath) {
 	const char* fmt_cmd = "rm -rf";
 	char rmcmd[50];
@@ -334,8 +340,7 @@ void fmi_cosim::rm_tmpFMU(const char* tmpPath) {
 	printf("\n temporary folder for FMU unzip is removed\n");
 }
 
-int fmi_cosim::simulateFMU(double currTime, double deltaTime,
-		double endTime) {
+int fmi_cosim::simulateFMU(double currTime, double deltaTime, double endTime) {
 	double time;
 	const char* guid;                // global unique id of the fmu
 
@@ -373,15 +378,15 @@ int fmi_cosim::simulateFMU(double currTime, double deltaTime,
 	return fmiOK; // success
 }
 
-int main(){
+int main() {
 
-	char a[]="models/ControlledTemperature.fmu";
-
-	fmi_cosim fmu1(a,1,0.1);
-	int s=fmu1.simulateFMU(1,0.1,2);
-	printf("%s ,%d ",fmu1.tmp_FMU_Path,s);
+	char a[] = "models/ControlledTemperature.fmu";
+	var var1("time");
+	fmi_cosim fmu1(a, 1, 0.1);
+	int s = fmu1.simulateFMU(1, 0.1, 2);
+	printf("%s ,%d %s", fmu1.tmp_FMU_Path, s, var1.name);
 	fmu1.unldFMU();
-	cout<<"done";
+	cout << "done";
 	return 0;
 }
 
