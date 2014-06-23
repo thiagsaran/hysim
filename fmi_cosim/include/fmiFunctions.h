@@ -57,6 +57,7 @@
  */
 
 #include "fmiPlatformTypes.h"
+#include <fmi_cosim.h>
 #include <stdlib.h>
 
 /* Export fmi functions on Windows */
@@ -123,7 +124,7 @@ typedef enum {
 } fmiStatus;
 
 typedef void (*fmiCallbackLogger)(fmiComponent c, fmiString instanceName,
-		fmiStatus status, fmiString category, fmiString message, ...);
+		fmiStatus status, fmiString category, fmiString message,...);
 typedef void* (*fmiCallbackAllocateMemory)(size_t nobj, size_t size);
 typedef void (*fmiCallbackFreeMemory)(void* obj);
 typedef void (*fmiStepFinished)(fmiComponent c, fmiStatus status);

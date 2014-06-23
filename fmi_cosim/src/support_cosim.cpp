@@ -26,7 +26,7 @@
 #include <dlfcn.h> //dlsym()
 #endif
 
-extern FMU fmu;
+extern FMU fmu_g;
 
 #if WINDOWS
 int unzip(const char *zipPath, const char *outPath) {
@@ -224,7 +224,7 @@ static int loadDll(const char* dllPath, FMU *fmu) {
 	}
 	fmu->dllHandle = h;
 
-	#ifdef FMI_COSIMULATION
+#ifdef FMI_COSIMULATION
 	fmu->getTypesPlatform = (fGetTypesPlatform) getAdr(&s, fmu,
 			"fmiGetTypesPlatform");
 	if (s == 0) {
@@ -258,7 +258,6 @@ static int loadDll(const char* dllPath, FMU *fmu) {
 			"fmiGetBooleanStatus");
 	fmu->getStringStatus = (fGetStringStatus) getAdr(&x, fmu,
 			"fmiGetStringStatus");
-
 
 #else // FMI for Model Exchange 1.0
 	fmu->getModelTypesPlatform = (fGetModelTypesPlatform) getAdr(&s, fmu, "fmiGetModelTypesPlatform");
@@ -310,63 +309,11 @@ static void printModelDescription(ModelDescription* md) {
 #endif // FMI_COSIMULATION  
 }
 
-char* loadFMU(const char* fmuFileName) {
+char* loadFMU(char *path, FMU *fmu) {
 	char* fmuPath;
 	char* tmpPath;
 	char* xmlPath;
 	char* dllPath;
-
-	// get absolute path to FMU, NULL if not found
-	fmuPath = getFmuPath(fmuFileName);
-	if (!fmuPath)
-		exit(EXIT_FAILURE);
-
-	// unzip the FMU to the tmpPath directory
-	tmpPath = getTmpPath();
-	if (!unzip(fmuPath, tmpPath))
-		exit(EXIT_FAILURE);
-
-	// parse tmpPath\modelDescription.xml
-	xmlPath = (char*) calloc(sizeof(char),
-			strlen(tmpPath) + strlen(XML_FILE) + 1);
-	sprintf(xmlPath, "%s%s", tmpPath, XML_FILE);
-	fmu.modelDescription = parse(xmlPath);
-	free(xmlPath);
-	if (!fmu.modelDescription)
-		exit(EXIT_FAILURE);
-	printModelDescription(fmu.modelDescription);
-
-	// load the FMU dll
-	dllPath = (char*) calloc(sizeof(char),
-			strlen(tmpPath) + strlen(DLL_DIR)
-					+ strlen(getModelIdentifier(fmu.modelDescription))
-					+ strlen(DLL_SUFFIX) + 1);
-	sprintf(dllPath, "%s%s%s%s", tmpPath, DLL_DIR,
-			getModelIdentifier(fmu.modelDescription), DLL_SUFFIX);
-	if (!loadDll(dllPath, &fmu)) {
-		// try the alternative directory and suffix
-		dllPath = (char*) calloc(sizeof(char),
-				strlen(tmpPath) + strlen(DLL_DIR2)
-						+ strlen(getModelIdentifier(fmu.modelDescription))
-						+ strlen(DLL_SUFFIX2) + 1);
-		sprintf(dllPath, "%s%s%s%s", tmpPath, DLL_DIR2,
-				getModelIdentifier(fmu.modelDescription), DLL_SUFFIX2);
-		if (!loadDll(dllPath, &fmu))
-			exit(EXIT_FAILURE);
-	}
-
-	free(dllPath);
-	free(fmuPath);
-	//free(tmpPath);
-	return tmpPath;
-}
-
-char* ldFMU(char *path, FMU *fmu) {
-	char* fmuPath;
-	char* tmpPath;
-	char* xmlPath;
-	char* dllPath;
-
 
 	// get absolute path to FMU, NULL if not found
 	fmuPath = getFmuPath(path);
@@ -388,7 +335,6 @@ char* ldFMU(char *path, FMU *fmu) {
 		exit(EXIT_FAILURE);
 	printModelDescription(fmu->modelDescription);
 
-////	// load the FMU dll
 	dllPath = (char*) calloc(sizeof(char),
 			strlen(tmpPath) + strlen(DLL_DIR)
 					+ strlen(getModelIdentifier(fmu->modelDescription))
@@ -396,9 +342,9 @@ char* ldFMU(char *path, FMU *fmu) {
 	sprintf(dllPath, "%s%s%s%s", tmpPath, DLL_DIR,
 			getModelIdentifier(fmu->modelDescription), DLL_SUFFIX);
 
-	int s = loadDll(dllPath,fmu);
-//printf("\nprinting debug value returned  %d",s);
-    if (!s){
+	int s = loadDll(dllPath, fmu);
+
+	if (!s) {
 		printf("printing debug");
 		// try the alternative directory and suffix
 		dllPath = (char*) calloc(sizeof(char),
@@ -511,7 +457,7 @@ void outputRow(FMU *fmu, fmiComponent c, double time, FILE* file,
 	fprintf(file, "\n");
 }
 
-static const char* fmiStatusToString(fmiStatus status) {
+const char* fmiStatusToString(fmiStatus status) {
 	switch (status) {
 	case fmiOK:
 		return "ok";
@@ -564,7 +510,7 @@ static ScalarVariable* getSV(FMU* fmu, char type, fmiValueReference vr) {
 
 // replace e.g. #r1365# by variable name and ## by # in message
 // copies the result to buffer
-static void replaceRefsInMessage(const char* msg, char* buffer, int nBuffer,
+ void replaceRefsInMessage(const char* msg, char* buffer, int nBuffer,
 		FMU* fmu) {
 	int i = 0; // position in msg
 	int k = 0; // position in buffer
@@ -613,103 +559,32 @@ static void replaceRefsInMessage(const char* msg, char* buffer, int nBuffer,
 	buffer[k] = '\0';
 }
 
-#define MAX_MSG_SIZE 1000
-void fmuLogger(fmiComponent c, fmiString instanceName, fmiStatus status,
-		fmiString category, fmiString message, ...) {
-	char msg[MAX_MSG_SIZE];
-	char* copy;
-	va_list argp;
-
-	// replace C format strings
-	va_start(argp, message);
-	vsprintf(msg, message, argp);
-
-	// replace e.g. ## and #r12#
-	copy = strdup(msg);
-	replaceRefsInMessage(copy, msg, MAX_MSG_SIZE, &fmu);
-	free(copy);
-
-	// print the final message
-	if (!instanceName)
-		instanceName = "?";
-	if (!category)
-		category = "?";
-	printf("%s %s (%s): %s\n", fmiStatusToString(status), instanceName,
-			category, msg);
-}
+//#define MAX_MSG_SIZE 1000
+//void fmuLogger(fmiComponent c, fmiString instanceName, fmiStatus status,
+//		fmiString category, fmiString message, ...) {
+//	char msg[MAX_MSG_SIZE];
+//	char* copy;
+//	va_list argp;
+//
+//	// replace C format strings
+//	va_start(argp, message);
+//	vsprintf(msg, message, argp);
+//
+//	// replace e.g. ## and #r12#
+//	copy = strdup(msg);
+//	replaceRefsInMessage(copy, msg, MAX_MSG_SIZE, &fmu_g);
+//	free(copy);
+//
+//	// print the final message
+//	if (!instanceName)
+//		instanceName = "?";
+//	if (!category)
+//		category = "?";
+//	printf("%s %s (%s): %s\n", fmiStatusToString(status), instanceName,
+//			category, msg);
+//}
 
 int error(const char* message) {
 	printf("%s\n", message);
 	return 0;
-}
-
-void parseArguments(int argc, char *argv[], char** fmuFileName, double* tEnd,
-		double* h, int* loggingOn, char* csv_separator) {
-	// parse command line arguments
-	if (argc > 1) {
-		*fmuFileName = argv[1];
-	} else {
-		printf("error: no fmu file\n");
-		printHelp(argv[0]);
-		exit(EXIT_FAILURE);
-	}
-	if (argc > 2) {
-		if (sscanf(argv[2], "%lf", tEnd) != 1) {
-			printf("error: The given end time (%s) is not a number\n", argv[2]);
-			exit(EXIT_FAILURE);
-		}
-	}
-	if (argc > 3) {
-		if (sscanf(argv[3], "%lf", h) != 1) {
-			printf("error: The given stepsize (%s) is not a number\n", argv[3]);
-			exit(EXIT_FAILURE);
-		}
-	}
-	if (argc > 4) {
-		if (sscanf(argv[4], "%d", loggingOn) != 1 || *loggingOn < 0
-				|| *loggingOn > 1) {
-			printf("error: The given logging flag (%s) is not boolean\n",
-					argv[4]);
-			exit(EXIT_FAILURE);
-		}
-	}
-	if (argc > 5) {
-		if (strlen(argv[5]) != 1) {
-			printf("error: The given CSV separator char (%s) is not valid\n",
-					argv[5]);
-			exit(EXIT_FAILURE);
-		}
-		switch (argv[5][0]) {
-		case 'c':
-			*csv_separator = ',';
-			break; // comma
-		case 's':
-			*csv_separator = ';';
-			break; // semicolon
-		default:
-			*csv_separator = argv[5][0];
-			break; // any other char
-		}
-	}
-	if (argc > 6) {
-		printf("warning: Ignoring %d additional arguments: %s ...\n", argc - 6,
-				argv[6]);
-		printHelp(argv[0]);
-	}
-}
-
-void printHelp(const char* fmusim) {
-	printf(
-			"command syntax: %s <model.fmu> <tEnd> <h> <loggingOn> <csv separator>\n",
-			fmusim);
-	printf(
-			"   <model.fmu> .... path to FMU, relative to current dir or absolute, required\n");
-	printf(
-			"   <tEnd> ......... end  time of simulation, optional, defaults to 1.0 sec\n");
-	printf(
-			"   <h> ............ step size of simulation, optional, defaults to 0.1 sec\n");
-	printf(
-			"   <loggingOn> .... 1 to activate logging,   optional, defaults to 0\n");
-	printf(
-			"   <csv separator>. separator in csv file,   optional, c for ';', s for';', defaults to c\n");
 }

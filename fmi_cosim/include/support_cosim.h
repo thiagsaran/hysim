@@ -57,26 +57,21 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-void fmuLogger(fmiComponent c, fmiString instanceName, fmiStatus status,
-		fmiString category, fmiString message, ...);
+
+//void fmuLogger(fmiComponent c, fmiString instanceName, fmiStatus status,
+//		fmiString category, fmiString message,...);
 int unzip(const char *zipPath, const char *outPath);
-void parseArguments(int argc, char *argv[], char** fmuFileName, double* tEnd,
-		double* h, int* loggingOn, char* csv_separator);
-char* loadFMU(const char* fmuFileName);
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
-char* ldFMU(char* fmuFileName, FMU *fmu);
-//#ifdef __cplusplus
-//}
-//#endif
+
+
+char* loadFMU(char* fmuFileName, FMU *fmu);
+
 #ifndef _MSC_VER
 typedef int boolean;
 #endif
-void outputRow(FMU *fmu, fmiComponent c, double time, FILE* file,
-		char separator, boolean header);
+
 int error(const char* message);
 void printHelp(const char* fmusim);
+
 #ifdef __cplusplus
 }
 #endif

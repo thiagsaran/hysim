@@ -26,6 +26,39 @@
 #include "fmiFunctions.h"
 #include "xml_parser.h"
 
+struct var {
+
+	fmiString name;
+	union {
+		fmiReal r;
+		fmiInteger i;
+		fmiString s;
+		fmiBoolean b;
+	} value;
+	Elm type;
+	fmiStatus stat;
+	fmiValueReference vr;
+
+	bool variableParsed;
+
+	var() {
+		name = "";
+		stat = fmiOK;
+		vr = 0;
+		variableParsed = false;
+		type = elm_ANY_TYPE;
+	}
+	;
+	var(fmiString varname) {
+		name = varname;
+		stat = fmiOK;
+		vr = 0;
+		variableParsed = false;
+		type = elm_ANY_TYPE;
+	}
+	;
+};
+
 typedef const char* (*fGetTypesPlatform)();
 typedef const char* (*fGetVersion)();
 typedef fmiStatus (*fSetDebugLogging)    (fmiComponent c, fmiBoolean loggingOn);
@@ -86,6 +119,10 @@ typedef struct {
     fGetBooleanStatus getBooleanStatus;
     fGetStringStatus getStringStatus;
 } FMU;
+
+
+
+
 
 #endif // FMI_CS_H
 
