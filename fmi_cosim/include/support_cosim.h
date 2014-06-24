@@ -61,8 +61,10 @@ extern "C" {
 //void fmuLogger(fmiComponent c, fmiString instanceName, fmiStatus status,
 //		fmiString category, fmiString message,...);
 int unzip(const char *zipPath, const char *outPath);
-
-
+void fmuLogger(fmiComponent c, fmiString instanceName, fmiStatus status,
+		fmiString category, fmiString message, ...);
+ScalarVariable* getSV_CS(FMU* fmu, char type, fmiValueReference vr);
+const char* fmiStatusToString_CS(fmiStatus status);
 char* loadFMU(char* fmuFileName, FMU *fmu);
 
 #ifndef _MSC_VER
