@@ -26,7 +26,7 @@
 #include <dlfcn.h> //dlsym()
 #endif
 
-extern FMU fmu_g;
+
 
 #if WINDOWS
 int unzip(const char *zipPath, const char *outPath) {
