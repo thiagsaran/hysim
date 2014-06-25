@@ -1,4 +1,4 @@
-/** @mainpage hysim hybrid h
+/** @mainpage hysim - hybrid and multi physical simulation
 * @file cosim.hpp
 *
 * @brief This file contains interfaces to communicate with FMI for Co-Simulation. Current version works for FMI - Version 1.0.
@@ -71,16 +71,31 @@ class fmi_cosim {
 public:
 
 	static FMU fmu_g;
-
-	fmi_cosim(char* FMU_Path, fmiReal Tcurr, fmiReal Tdelta) {
-		T_curr = Tcurr;
-		T_delta = Tdelta;
+/*
+ * A constructor for Class fmi_cosim to load the FMU
+ *
+ * <@param FMU_Path the path of FMU should be passed>
+ *
+ */
+	fmi_cosim(char* FMU_Path) {
 		tmp_FMU_Path = buildFMU(FMU_Path);
 	}
 	~fmi_cosim();
 
 	fmiComponent c;                  // instance of the fmu
 	ModelDescription *md;            // handle to the parsed XML file
+
+/*
+ * A constructor for Class fmi_cosim to load the FMU
+ *
+ * <@param currTime - set the current time of the simulation
+ * @param deltaTime - Minimum delta time from the current time
+ * for which the loaded FMU is simulated
+ * @param endTime - Time at which simulation ends
+ * @return - returns the status of simulation for current delta as fmiStatus>
+ *
+ */
+
 	int simulateFMU(double currTime, double deltaTime, double endTime);
 
 	int initFMU(double currTime, double endTime);
@@ -100,7 +115,7 @@ public:
 	}
 
 	const char* tmp_FMU_Path;
-	fmiReal T_curr, T_delta;
+
 	void rm_tmpFMU(const char*);
 
 	friend void fmuLogger(fmiComponent c, fmiString instanceName,
