@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include <xml_parser.h>
+#include <xml_parser.hpp>
 
 const char *elmNames[SIZEOF_ELM] = { "fmiModelDescription", "UnitDefinitions",
 		"BaseUnit", "DisplayUnitDefinition", "TypeDefinitions", "Type",

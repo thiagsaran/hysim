@@ -18,15 +18,13 @@
 #include "fmi_me.h" // later model exchange can be integrated to a unified base.
 #endif
 
-#include <support_cosim.h>
+#include <support_cosim.hpp>
 
 #ifndef _MSC_VER
 #define MAX_PATH 1024
 #include <unistd.h>  // mkdtemp()
 #include <dlfcn.h> //dlsym()
 #endif
-
-
 
 #if WINDOWS
 int unzip(const char *zipPath, const char *outPath) {
@@ -529,35 +527,36 @@ ScalarVariable* getSV(FMU* fmu, char type, fmiValueReference vr) {
 	return NULL;
 }
 
-ScalarVariable* getSV_CS(FMU* fmu, char type, fmiValueReference vr){
+ScalarVariable* getSV_CS(FMU* fmu, char type, fmiValueReference vr) {
 	int i;
-		Elm tp;
-		ScalarVariable** vars = fmu->modelDescription->modelVariables;
-		if (vr == fmiUndefinedValueReference)
-			return NULL;
-		switch (type) {
-		case 'r':
-			tp = elm_Real;
-			break;
-		case 'i':
-			tp = elm_Integer;
-			break;
-		case 'b':
-			tp = elm_Boolean;
-			break;
-		case 's':
-			tp = elm_String;
-			break;
-		}
-		for (i = 0; vars[i]; i++) {
-			ScalarVariable* sv = vars[i];
-			if (vr == getValueReference(sv) && tp == sv->typeSpec->type)
-				return sv;
-		}
+	Elm tp;
+	ScalarVariable** vars = fmu->modelDescription->modelVariables;
+	if (vr == fmiUndefinedValueReference)
 		return NULL;
+	switch (type) {
+	case 'r':
+		tp = elm_Real;
+		break;
+	case 'i':
+		tp = elm_Integer;
+		break;
+	case 'b':
+		tp = elm_Boolean;
+		break;
+	case 's':
+		tp = elm_String;
+		break;
+	}
+	for (i = 0; vars[i]; i++) {
+		ScalarVariable* sv = vars[i];
+		if (vr == getValueReference(sv) && tp == sv->typeSpec->type)
+			return sv;
+	}
+	return NULL;
 }
 
 int error(const char* message) {
 	printf("%s\n", message);
 	return 0;
 }
+

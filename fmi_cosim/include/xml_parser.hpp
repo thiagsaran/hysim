@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------------- 
- * xml_parser.h
+ * xml_parser.hpp
  * A parser for file modelVariables.xml of an FMU.
  * Supports "FMI for Model Exchange 1.0" and "FMI for Co-Simulation 1.0".
  * Copyright 2011 QTronic GmbH. All rights reserved. 
@@ -12,7 +12,7 @@
 // to prevent error when linking with libexpatMT.lib
 #define XML_STATIC 
 #include "expat.h"
-#include "stack.h"
+#include "stack.hpp"
 
 #ifndef fmiModelTypes_h
 #ifndef fmiPlatformTypes_h

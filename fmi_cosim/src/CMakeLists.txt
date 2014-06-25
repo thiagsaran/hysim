@@ -1,11 +1,11 @@
 ADD_EXECUTABLE(cosim_main
                             main_cosim.cpp
+                            cosim.cpp
                             support_cosim.cpp
                             stack.cpp
-			    xml_parser.cpp
+			    			xml_parser.cpp
                             )
                     
-target_link_libraries(cosim_main
-			expat	
-			
-                     )
+target_link_libraries(	cosim_main
+						expat	
+			         )

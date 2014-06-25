@@ -1,8 +1,14 @@
-/* ------------------------------------------------------------------------- 
- * sim_support.h
- * Functions used by the FMU simulatios fmusim_me and fmusim_cs.
- * Copyright 2011 QTronic GmbH. All rights reserved. 
- * -------------------------------------------------------------------------*/
+/**
+* @file support_cosim.h
+*
+* @brief This file contains helper functions to unzip and load the FMU to memory. Current version works for FMI - Version 1.0.
+* This package is one of the different packages of hysim - hybrid simulation
+*
+* @author Thiyagarajan Purusothaman
+*
+* @date June, 25th 2014 - hysim v1.0
+*
+**/
 
 // Used 7z options, version 4.57:
 // -x   Extracts files from an archive with their full paths in the current dir, or in an output dir if specified
@@ -58,12 +64,12 @@
 extern "C" {
 #endif
 
-//void fmuLogger(fmiComponent c, fmiString instanceName, fmiStatus status,
-//		fmiString category, fmiString message,...);
 int unzip(const char *zipPath, const char *outPath);
 void fmuLogger(fmiComponent c, fmiString instanceName, fmiStatus status,
 		fmiString category, fmiString message, ...);
+ScalarVariable* getSV(FMU* fmu, char type, fmiValueReference vr);
 ScalarVariable* getSV_CS(FMU* fmu, char type, fmiValueReference vr);
+const char* fmiStatusToString(fmiStatus status);
 const char* fmiStatusToString_CS(fmiStatus status);
 char* loadFMU(char* fmuFileName, FMU *fmu);
 
